@@ -3,10 +3,14 @@ import dotenv from 'dotenv';
 import express from 'express';
 import routes from './routes/index.mjs';
 import { globalErrorHandler } from './middleware/globalErrorHandler.mjs';
+import { connectToDatabase } from './config/db.mjs';
 
 dotenv.config();
 
 const app = express();
+
+// Connect to SQL Server on app startup
+connectToDatabase();
 
 // middleware
 app.use(cors({
