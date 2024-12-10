@@ -1,0 +1,34 @@
+import cors from 'cors';
+import dotenv from 'dotenv';
+import express from 'express';
+import routes from './routes/index.mjs';
+import { globalErrorHandler } from './middleware/globalErrorHandler.mjs';
+
+dotenv.config();
+
+const app = express();
+
+// middleware
+app.use(cors({
+  origin: 'http://localhost:3000',
+  credentials: true,
+}));
+
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+
+app.use('/api', routes);
+
+// Error handlers middleware
+app.use(globalErrorHandler);
+
+// 404 error
+app.use("*", (request, response) => {
+  response.status(404).json({ message: "Not found!" })
+});
+
+const PORT = process.env.PORT || 3030;
+
+app.listen(PORT, () => {
+  console.log(`running on ${PORT}`);
+});
