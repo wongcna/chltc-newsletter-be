@@ -18,7 +18,7 @@ export const createNewsletterTemplate = async (req, res, next) => {
 
     if (result?.recordset && result.recordset.length > 0) {
       return res.status(201).json({
-        data: result.recordset[0], // The newly inserted template
+        data: result.recordset[0],
         message: 'Newsletter template created successfully!'
       });
     } else {
@@ -42,7 +42,7 @@ export const getNewsletterTemplates = async (req, res, next) => {
 export const getNewsletterTemplateById = async (req, res, next) => {
   try {
     const { id } = req.params;
-    const result = await sql.query`SELECT * FROM newsletter_templates WHERE NewsletterID = ${id}`;
+    const result = await sql.query`SELECT * FROM newsletter_templates WHERE id = ${id}`;
 
     if (result.recordset.length === 0) {
       return res.status(404).json({ error: 'Newsletter not found' });
@@ -62,7 +62,7 @@ export const updateNewsletterTemplate = async (req, res, next) => {
     const result = await sql.query`
       UPDATE newsletter_templates 
       SET title = ${title}, content = ${content} 
-      WHERE NewsletterID = ${id}
+      WHERE id = ${id}
     `;
 
     if (result.rowsAffected[0] === 0) {
@@ -70,7 +70,7 @@ export const updateNewsletterTemplate = async (req, res, next) => {
     }
 
     const updatedResult = await sql.query`
-      SELECT * FROM newsletter_templates WHERE NewsletterID = ${id}
+      SELECT * FROM newsletter_templates WHERE id = ${id}
     `;
 
     return res.json({ data: updatedResult.recordset[0], message: 'Newsletter template updated successfully!' })
@@ -82,7 +82,7 @@ export const updateNewsletterTemplate = async (req, res, next) => {
 export const deleteNewsletterTemplate = async (req, res, next) => {
   try {
     const { id } = req.params;
-    const result = await sql.query`DELETE FROM newsletter_templates WHERE NewsletterID = ${id}`;
+    const result = await sql.query`DELETE FROM newsletter_templates WHERE id = ${id}`;
     if (result.rowsAffected[0] === 0) {
       return res.status(404).json({ error: 'Newsletter not found' });
     }

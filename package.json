@@ -20,6 +20,7 @@
     "express": "^4.21.2",
     "jsonwebtoken": "^9.0.2",
     "mssql": "^11.0.1",
+    "node-cron": "^3.0.3",
     "nodemailer": "^6.9.14"
   },
   "devDependencies": {

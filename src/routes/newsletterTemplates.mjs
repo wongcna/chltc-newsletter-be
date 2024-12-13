@@ -1,12 +1,12 @@
 import express from 'express';
 
 import {
-  createNewsletterTemplate,
   getNewsletterTemplates,
-  getNewsletterTemplateById,
   updateNewsletterTemplate,
   deleteNewsletterTemplate,
-} from '../services/newsletter templates.mjs';
+  createNewsletterTemplate,
+  getNewsletterTemplateById,
+} from '../services/newsletterTemplates.mjs';
 
 const router = express.Router();
 

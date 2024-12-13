@@ -20,14 +20,15 @@ const connectToDatabase = async () => {
     try {
         await sql.connect(config);
         console.log('Connected to SQL Server');
-        const checkTableQuery = `
+        const checkTemplatesTableQuery = `
             IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME = 'newsletter_templates')
             BEGIN
                 CREATE TABLE newsletter_templates (
-                    NewsletterID INT IDENTITY(1,1) PRIMARY KEY,
+                    id INT IDENTITY(1,1) PRIMARY KEY,
                     title NVARCHAR(255) NOT NULL,
                     content NVARCHAR(MAX) NOT NULL,
-                    createdAt DATETIME DEFAULT GETDATE()
+                    createdAt DATETIME DEFAULT GETDATE(),
+                    updatedAt DATETIME DEFAULT GETDATE()
                 );
                 PRINT 'Table "newsletter_templates" has been created.';
             END
@@ -36,7 +37,31 @@ const connectToDatabase = async () => {
                 PRINT 'Table "newsletter_templates" already exists.';
             END
         `;
-        await sql.query(checkTableQuery);
+
+        await sql.query(checkTemplatesTableQuery);
+
+        const createSchedulesTableQuery = `
+            IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME = 'newsletter_schedules')
+            BEGIN
+                CREATE TABLE newsletter_schedules (
+                    id INT IDENTITY(1,1) PRIMARY KEY,
+                    dateTime DATETIME NOT NULL,
+                    title NVARCHAR(255) NOT NULL,
+                    content NVARCHAR(MAX) NOT NULL,
+                    category NVARCHAR(100) NULL,
+                    deliveryReport NVARCHAR(255) NULL,
+                    members NVARCHAR(MAX) NULL, 
+                    createdAt DATETIME DEFAULT GETDATE(),
+                    updatedAt DATETIME DEFAULT GETDATE()
+                );
+                PRINT 'Table "newsletter_schedules" has been created.';
+            END
+            ELSE
+            BEGIN
+                PRINT 'Table "newsletter_schedules" already exists.';
+            END
+        `;
+        await sql.query(createSchedulesTableQuery);
 
     } catch (err) {
         console.error('Error connecting to SQL Server:', err);
