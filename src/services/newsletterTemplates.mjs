@@ -4,7 +4,6 @@ import { appError } from "../middleware/globalErrorHandler.mjs";
 export const createNewsletterTemplate = async (req, res, next) => {
   try {
     const { title, content } = req.body;
-    console.log({ title, content });
 
     if (!title || !content) {
       return next(appError('Title and content are required fields!', 400));
@@ -32,10 +31,30 @@ export const createNewsletterTemplate = async (req, res, next) => {
 
 export const getNewsletterTemplates = async (req, res, next) => {
   try {
-    const result = await sql.query`SELECT * FROM newsletter_templates`;
-    return res.json({ data: result?.recordset, message: 'Newsletter templates fetched successfully!' })
+    const { search } = req.query;
+
+    let query = 'SELECT * FROM newsletter_templates';
+    let params = [];
+
+    if (search) {
+      query += ' WHERE title LIKE @search';
+      params.push({
+        name: 'search',
+        type: sql.NVarChar,
+        value: `%${search}%`
+      });
+    }
+
+    const request = new sql.Request();
+    params.forEach(param => {
+      request.input(param.name, param.type, param.value);
+    });
+
+    const result = await request.query(query);
+
+    return res.json({ data: result?.recordset, message: 'Newsletter templates fetched successfully!' });
   } catch (error) {
-    next(appError(error.message))
+    next(appError(error.message));
   }
 };
 

@@ -59,10 +59,29 @@ export const createNewsletterSchedule = async (req, res, next) => {
 
 export const getNewsletterSchedules = async (req, res, next) => {
   try {
-    const result = await sql.query`SELECT * FROM newsletter_schedules`;
-    return res.json({ data: result?.recordset, message: 'Newsletter templates fetched successfully!' })
+    const { search } = req.query;
+    let query = 'SELECT * FROM newsletter_schedules';
+    let params = [];
+
+    if (search) {
+      query += ' WHERE title LIKE @search';
+      params.push({
+        name: 'search',
+        type: sql.NVarChar,
+        value: `%${search}%`
+      });
+    }
+
+    const request = new sql.Request();
+    params.forEach(param => {
+      request.input(param.name, param.type, param.value);
+    });
+
+    const result = await request.query(query);
+
+    return res.json({ data: result?.recordset, message: 'Newsletter schedules fetched successfully!' });
   } catch (error) {
-    next(appError(error.message))
+    next(appError(error.message));
   }
 };
 
