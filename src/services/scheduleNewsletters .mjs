@@ -1,7 +1,7 @@
 import cron from 'node-cron';
 import { sql } from "../config/db.mjs";
-import { appError } from "../middleware/globalErrorHandler.mjs";
 import { sendMail } from "../utils/sendMail.mjs";
+import { appError } from "../middleware/globalErrorHandler.mjs";
 
 export const createNewsletterSchedule = async (req, res, next) => {
   try {
