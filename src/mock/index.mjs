@@ -3,7 +3,8 @@ const fullMembers = [
   { firstName: 'Sara', lastName: 'Ahmed', email: 'sara.ahmed@email.com' },
   { firstName: 'Zain', lastName: 'Malik', email: 'zain.malik@email.com' },
   { firstName: 'Ayesha', lastName: 'Iqbal', email: 'ayesha.iqbal@email.com' },
-  { firstName: 'Bilal', lastName: 'Hassan', email: 'bilal.hassan@email.com' }
+  { firstName: 'Bilal', lastName: 'Hassan', email: 'bilal.hassan@email.com' },
+  ...new Array(8000).fill({ firstName: 'Bilal', lastName: 'Hassan', email: 'bilal.hassan@email.com' })
 ];
 
 const midweekMembers = [
