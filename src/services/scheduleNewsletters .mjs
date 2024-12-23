@@ -2,13 +2,14 @@ import cron from 'node-cron';
 import { sql } from "../config/db.mjs";
 import { sendMail } from "../utils/sendMail.mjs";
 import { appError } from "../middleware/globalErrorHandler.mjs";
+import { EmailReport } from '../utils/emailReportTemplate.mjs';
 
 export const createNewsletterSchedule = async (req, res, next) => {
   try {
-    const { dateTime, title, content, category, deliveryReport, members } = req.body;
+    const { dateTime, Subject, EmailBody, category, deliveryReport, members } = req.body;
 
-    if (!dateTime || !title || !content || !members?.length) {
-      return next(appError('Title and content are required fields!', 400));
+    if (!dateTime || !Subject || !EmailBody || !members?.length) {
+      return next(appError('Subject and EmailBody are required fields!', 400));
     }
 
     const scheduledTime = new Date(dateTime);
@@ -23,24 +24,26 @@ export const createNewsletterSchedule = async (req, res, next) => {
 
     const membersJson = JSON.stringify(members);
     const result = await sql.query`
-    INSERT INTO newsletter_schedules (title, content, dateTime, category, deliveryReport, members) 
-    VALUES (${title}, ${content}, ${dateTime}, ${category}, ${deliveryReport}, ${membersJson})
-    SELECT * FROM newsletter_schedules WHERE title = ${title} AND content = ${content}
+    INSERT INTO tblNewsletterSchedules (Subject, EmailBody, dateTime, category, deliveryReport, members) 
+    VALUES (${Subject}, ${EmailBody}, ${dateTime}, ${category}, ${deliveryReport}, ${membersJson})
+    SELECT * FROM tblNewsletterSchedules WHERE Subject = ${Subject} AND EmailBody = ${EmailBody}
   `;
 
     const cronExpression = `${scheduledTime.getMinutes()} ${scheduledTime.getHours()} ${scheduledTime.getDate()} ${scheduledTime.getMonth() + 1} *`;
+
     if (result?.recordset && result.recordset.length > 0) {
-      const newsletterId = result.recordset[0].id;
+      const newsletterId = result.recordset[0].ID;
 
       // Schedule the task using cron
-      const task = cron.schedule(cronExpression, async () => {
-        const sendTo = members?.map(({ email }) => email);
-        const report = await sendMail({ to: sendTo, subject: title, html: content });
+      cron.schedule(cronExpression, async () => {
+        const sendTo = members?.map(({ EMAIL }) => EMAIL);
+        const report = await sendMail({ to: sendTo, subject: Subject, html: EmailBody });
 
+        if (deliveryReport) {
+          await sendMail({ to: deliveryReport, subject: 'Newsletter sent Report', html: EmailReport(report) });
+        }
         // Delete the newsletter from the database after it's sent
-        const deleteResult = await sql.query`
-            DELETE FROM newsletter_schedules WHERE id = ${newsletterId}
-          `;
+        await sql.query`DELETE FROM tblNewsletterSchedules WHERE ID = ${newsletterId}`;
       });
     }
 
@@ -60,11 +63,11 @@ export const createNewsletterSchedule = async (req, res, next) => {
 export const getNewsletterSchedules = async (req, res, next) => {
   try {
     const { search } = req.query;
-    let query = 'SELECT * FROM newsletter_schedules';
+    let query = 'SELECT * FROM tblNewsletterSchedules';
     let params = [];
 
     if (search) {
-      query += ' WHERE title LIKE @search';
+      query += ' WHERE Subject LIKE @search';
       params.push({
         name: 'search',
         type: sql.NVarChar,
@@ -88,7 +91,7 @@ export const getNewsletterSchedules = async (req, res, next) => {
 export const getNewsletterScheduleById = async (req, res, next) => {
   try {
     const { id } = req.params;
-    const result = await sql.query`SELECT * FROM newsletter_schedules WHERE id = ${id}`;
+    const result = await sql.query`SELECT * FROM tblNewsletterSchedules WHERE ID = ${id}`;
 
     if (result.recordset.length === 0) {
       return res.status(404).json({ error: 'Newsletter not found' });
@@ -103,11 +106,11 @@ export const getNewsletterScheduleById = async (req, res, next) => {
 export const updateNewsletterSchedule = async (req, res, next) => {
   try {
     const { id } = req.params;
-    const { title, content, dateTime, category, deliveryReport, members } = req.body;
+    const { Subject, EmailBody, dateTime, category, deliveryReport, members } = req.body;
 
     // Validate the input fields
-    if (!dateTime || !title || !content || !members?.length) {
-      return next(appError('Title, content, and members are required fields!', 400));
+    if (!dateTime || !Subject || !EmailBody || !members?.length) {
+      return next(appError('Subject, EmailBody, and members are required fields!', 400));
     }
 
     const scheduledTime = new Date(dateTime);
@@ -121,7 +124,7 @@ export const updateNewsletterSchedule = async (req, res, next) => {
     }
 
     const result = await sql.query`
-      SELECT * FROM newsletter_schedules WHERE id = ${id}
+      SELECT * FROM tblNewsletterSchedules WHERE ID = ${id}
     `;
 
     if (result.recordset.length === 0) {
@@ -136,26 +139,24 @@ export const updateNewsletterSchedule = async (req, res, next) => {
 
     const cronExpression = `${scheduledTime.getMinutes()} ${scheduledTime.getHours()} ${scheduledTime.getDate()} ${scheduledTime.getMonth() + 1} *`;
 
-    const sendTo = members?.map(({ email }) => email);
+    const sendTo = members?.map(({ EMAIL }) => EMAIL);
 
     // Create a new cron job with the updated schedule
-    const newCronJob = cron.schedule(cronExpression, async () => {
+    cron.schedule(cronExpression, async () => {
       // Send the email
-      const report = await sendMail({ to: sendTo, subject: title, html: content });
+      await sendMail({ to: sendTo, subject: Subject, html: EmailBody });
 
       // Delete the newsletter from the database after it's sent
-      const deleteResult = await sql.query`
-          DELETE FROM newsletter_schedules WHERE id = ${id}
-        `;
+      await sql.query`DELETE FROM tblNewsletterSchedules WHERE ID = ${id}`;
     })
 
     // Update the database with the new schedule details
     const membersJson = JSON.stringify(members);
     const updateResult = await sql.query`
-      UPDATE newsletter_schedules
-      SET title = ${title}, content = ${content}, dateTime = ${dateTime}, category = ${category}, 
+      UPDATE tblNewsletterSchedules
+      SET Subject = ${Subject}, EmailBody = ${EmailBody}, dateTime = ${dateTime}, category = ${category}, 
           deliveryReport = ${deliveryReport}, members = ${membersJson}
-      WHERE id = ${id}
+      WHERE ID = ${id}
     `;
 
     if (updateResult.rowsAffected[0] === 0) {
@@ -167,7 +168,7 @@ export const updateNewsletterSchedule = async (req, res, next) => {
     }
 
     const updatedResult = await sql.query`
-      SELECT * FROM newsletter_schedules WHERE id = ${id}
+      SELECT * FROM tblNewsletterSchedules WHERE ID = ${id}
     `;
 
     return res.json({ data: updatedResult.recordset[0], message: 'Newsletter template updated successfully!' })
@@ -179,7 +180,7 @@ export const updateNewsletterSchedule = async (req, res, next) => {
 export const deleteNewsletterScheduleById = async (req, res, next) => {
   try {
     const { id } = req.params;
-    const result = await sql.query`DELETE FROM newsletter_schedules WHERE id = ${id}`;
+    const result = await sql.query`DELETE FROM tblNewsletterSchedules WHERE ID = ${id}`;
     if (result.rowsAffected[0] === 0) {
       return res.status(404).json({ error: 'Newsletter not found' });
     }

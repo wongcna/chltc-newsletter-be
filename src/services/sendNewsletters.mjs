@@ -1,17 +1,22 @@
 import { appError } from "../middleware/globalErrorHandler.mjs";
+import { EmailReport } from "../utils/emailReportTemplate.mjs";
 import { sendMail } from "../utils/sendMail.mjs";
 
 export const sendNewsletters = async (req, res, next) => {
   try {
-    const { title, content, category, deliveryReport, members } = req.body;
+    const { Subject, EmailBody, members, deliveryReport } = req.body;
 
-    if (!title || !content || !members?.length) {
-      return next(appError('Title and content are required fields!', 400));
+    if (!Subject || !EmailBody || !members?.length) {
+      return next(appError('Subject and EmailBody are required fields!', 400));
     }
 
-    const sendTo = members?.map(({ email }) => email);
+    const sendTo = members?.map(({ EMAIL }) => EMAIL);
 
-    const report = await sendMail({ to: sendTo, subject: title, html: content });
+    const report = await sendMail({ to: sendTo, subject: Subject, html: EmailBody });
+
+    if (deliveryReport) {
+      await sendMail({ to: deliveryReport, subject: 'Newsletter sent Report', html: EmailReport(report) });
+    }
 
     console.log('report', report);
 

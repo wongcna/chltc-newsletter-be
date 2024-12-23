@@ -3,16 +3,16 @@ import { appError } from "../middleware/globalErrorHandler.mjs";
 
 export const createNewsletterTemplate = async (req, res, next) => {
   try {
-    const { title, content } = req.body;
+    const { Subject, EmailBOdy } = req.body;
 
-    if (!title || !content) {
-      return next(appError('Title and content are required fields!', 400));
+    if (!Subject || !EmailBOdy) {
+      return next(appError('Subject and EmailBOdy are required fields!', 400));
     }
 
     const result = await sql.query`
-    INSERT INTO newsletter_templates (title, content) 
-    VALUES (${title}, ${content})
-    SELECT * FROM newsletter_templates WHERE title = ${title} AND content = ${content}
+    INSERT INTO tblEmailTemplate (Subject, EmailBOdy) 
+    VALUES (${Subject}, ${EmailBOdy})
+    SELECT * FROM tblEmailTemplate WHERE Subject = ${Subject} AND EmailBOdy = ${EmailBOdy}
   `;
 
     if (result?.recordset && result.recordset.length > 0) {
@@ -23,7 +23,6 @@ export const createNewsletterTemplate = async (req, res, next) => {
     } else {
       return next(appError('Failed to create the newsletter template.', 500));
     }
-
   } catch (error) {
     next(appError(error.message))
   }
@@ -31,13 +30,17 @@ export const createNewsletterTemplate = async (req, res, next) => {
 
 export const getNewsletterTemplates = async (req, res, next) => {
   try {
-    const { search } = req.query;
+    const { search, page = 1, limit = 12 } = req.query;
 
-    let query = 'SELECT * FROM newsletter_templates';
+    const offset = (page - 1) * limit;
+
+    let query = 'SELECT * FROM tblEmailTemplate';
+    let countQuery = 'SELECT COUNT(*) AS total FROM tblEmailTemplate';
     let params = [];
 
     if (search) {
-      query += ' WHERE title LIKE @search';
+      query += ' WHERE Subject LIKE @search';
+      countQuery += ' WHERE Subject LIKE @search';
       params.push({
         name: 'search',
         type: sql.NVarChar,
@@ -45,14 +48,41 @@ export const getNewsletterTemplates = async (req, res, next) => {
       });
     }
 
+    query += ' ORDER BY SSMA_TimeStamp DESC OFFSET @offset ROWS FETCH NEXT @limit ROWS ONLY';
+    params.push(
+      {
+        name: 'offset',
+        type: sql.Int,
+        value: offset
+      },
+      {
+        name: 'limit',
+        type: sql.Int,
+        value: limit
+      }
+    );
+
     const request = new sql.Request();
     params.forEach(param => {
       request.input(param.name, param.type, param.value);
     });
 
+    // Fetch the results
     const result = await request.query(query);
+    const totalResult = await request.query(countQuery);
 
-    return res.json({ data: result?.recordset, message: 'Newsletter templates fetched successfully!' });
+    // Calculate total pages
+    const totalRecords = totalResult?.recordset[0]?.total || 0;
+    const totalPages = Math.ceil(totalRecords / limit);
+
+    return res.json({
+      data: result?.recordset,
+      totalRecords,
+      totalPages,
+      currentPage: parseInt(page),
+      message: 'Newsletter templates fetched successfully!'
+    });
+
   } catch (error) {
     next(appError(error.message));
   }
@@ -61,7 +91,7 @@ export const getNewsletterTemplates = async (req, res, next) => {
 export const getNewsletterTemplateById = async (req, res, next) => {
   try {
     const { id } = req.params;
-    const result = await sql.query`SELECT * FROM newsletter_templates WHERE id = ${id}`;
+    const result = await sql.query`SELECT * FROM tblEmailTemplate WHERE ID = ${id}`;
 
     if (result.recordset.length === 0) {
       return res.status(404).json({ error: 'Newsletter not found' });
@@ -76,20 +106,19 @@ export const getNewsletterTemplateById = async (req, res, next) => {
 export const updateNewsletterTemplate = async (req, res, next) => {
   try {
     const { id } = req.params;
-    const { title, content } = req.body;
+    const { Subject, EmailBOdy } = req.body;
 
     const result = await sql.query`
-      UPDATE newsletter_templates 
-      SET title = ${title}, content = ${content} 
-      WHERE id = ${id}
-    `;
+      UPDATE tblEmailTemplate 
+      SET Subject = ${Subject}, EmailBOdy = ${EmailBOdy} 
+      WHERE ID = ${id}`;
 
     if (result.rowsAffected[0] === 0) {
       return res.status(404).json({ error: 'Newsletter template not found' });
     }
 
     const updatedResult = await sql.query`
-      SELECT * FROM newsletter_templates WHERE id = ${id}
+      SELECT * FROM tblEmailTemplate WHERE ID = ${id}
     `;
 
     return res.json({ data: updatedResult.recordset[0], message: 'Newsletter template updated successfully!' })
@@ -101,7 +130,7 @@ export const updateNewsletterTemplate = async (req, res, next) => {
 export const deleteNewsletterTemplate = async (req, res, next) => {
   try {
     const { id } = req.params;
-    const result = await sql.query`DELETE FROM newsletter_templates WHERE id = ${id}`;
+    const result = await sql.query`DELETE FROM tblEmailTemplate WHERE ID = ${id}`;
     if (result.rowsAffected[0] === 0) {
       return res.status(404).json({ error: 'Newsletter not found' });
     }
