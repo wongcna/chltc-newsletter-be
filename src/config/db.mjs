@@ -1,8 +1,8 @@
 // db.js
 import sql from 'mssql';
-import dotenv from 'dotenv';
+// import dotenv from 'dotenv';
 
-dotenv.config();
+// dotenv.config("./.env");
 
 const config = {
   user: process.env.DB_USER,
@@ -14,6 +14,7 @@ const config = {
     trustServerCertificate: true,
   },
 };
+//console.log('DB_config:', config);
 
 // Function to connect to the database
 const connectToDatabase = async () => {
