@@ -10,9 +10,9 @@ export const createNewsletterTemplate = async (req, res, next) => {
     }
 
     const result = await sql.query`
-    INSERT INTO tblEmailTemplate (Subject, EmailBOdy) 
+    INSERT INTO tblNewsletters (Subject, EmailBOdy) 
     VALUES (${Subject}, ${EmailBOdy})
-    SELECT * FROM tblEmailTemplate WHERE Subject = ${Subject} AND EmailBOdy = ${EmailBOdy}
+    SELECT * FROM tblNewsletters WHERE Subject = ${Subject} AND EmailBOdy = ${EmailBOdy}
   `;
 
     if (result?.recordset && result.recordset.length > 0) {
@@ -34,8 +34,8 @@ export const getNewsletterTemplates = async (req, res, next) => {
 
     const offset = (page - 1) * limit;
 
-    let query = 'SELECT * FROM tblEmailTemplate';
-    let countQuery = 'SELECT COUNT(*) AS total FROM tblEmailTemplate';
+    let query = 'SELECT * FROM tblNewsletters';
+    let countQuery = 'SELECT COUNT(*) AS total FROM tblNewsletters';
     let params = [];
 
     if (search) {
@@ -91,7 +91,7 @@ export const getNewsletterTemplates = async (req, res, next) => {
 export const getNewsletterTemplateById = async (req, res, next) => {
   try {
     const { id } = req.params;
-    const result = await sql.query`SELECT * FROM tblEmailTemplate WHERE ID = ${id}`;
+    const result = await sql.query`SELECT * FROM tblNewsletters WHERE ID = ${id}`;
 
     if (result.recordset.length === 0) {
       return res.status(404).json({ error: 'Newsletter not found' });
@@ -109,7 +109,7 @@ export const updateNewsletterTemplate = async (req, res, next) => {
     const { Subject, EmailBOdy } = req.body;
 
     const result = await sql.query`
-      UPDATE tblEmailTemplate 
+      UPDATE tblNewsletters 
       SET Subject = ${Subject}, EmailBOdy = ${EmailBOdy} 
       WHERE ID = ${id}`;
 
@@ -118,7 +118,7 @@ export const updateNewsletterTemplate = async (req, res, next) => {
     }
 
     const updatedResult = await sql.query`
-      SELECT * FROM tblEmailTemplate WHERE ID = ${id}
+      SELECT * FROM tblNewsletters WHERE ID = ${id}
     `;
 
     return res.json({ data: updatedResult.recordset[0], message: 'Newsletter template updated successfully!' })
@@ -130,7 +130,7 @@ export const updateNewsletterTemplate = async (req, res, next) => {
 export const deleteNewsletterTemplate = async (req, res, next) => {
   try {
     const { id } = req.params;
-    const result = await sql.query`DELETE FROM tblEmailTemplate WHERE ID = ${id}`;
+    const result = await sql.query`DELETE FROM tblNewsletters WHERE ID = ${id}`;
     if (result.rowsAffected[0] === 0) {
       return res.status(404).json({ error: 'Newsletter not found' });
     }
