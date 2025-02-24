@@ -7,7 +7,8 @@
     "dev": "nodemon ./src/index.mjs",
     "start": "node index.mjs",
     "build": "echo \"No build step defined\" && exit 0",
-    "prod": "NODE_ENV=production node index.mjs"
+    "prod": "NODE_ENV=production node index.mjs",
+    "start-gendoc": "node swagger.js"
   },
   "keywords": [],
   "author": "",
@@ -21,7 +22,10 @@
     "jsonwebtoken": "^9.0.2",
     "mssql": "^11.0.1",
     "node-cron": "^3.0.3",
-    "nodemailer": "^6.9.14"
+    "nodemailer": "^6.9.14",
+    "swagger-autogen": "^2.23.7",
+    "swagger-jsdoc": "^6.2.8",
+    "swagger-ui-express": "^5.0.1"
   },
   "devDependencies": {
     "nodemon": "^3.1.4"

@@ -1,5 +1,6 @@
 
 export const appError = (message, statusCode) => {
+  console.log({errorMessage: message});
   const error = new Error(message);
   error.statusCode = statusCode || 500;
   error.stack = error.stack;

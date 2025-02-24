@@ -6,6 +6,7 @@ export const isLogin = (request, response, next) => {
   const decodedUser = verifyToken(token);
 
   if (!decodedUser) {
+    console.log("Unauthorized");
     next(appError('Unauthorized', 401))
   } else {
     request.userAuth = decodedUser?.id;

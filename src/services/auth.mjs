@@ -30,48 +30,14 @@ export const login = async (req, res, next) => {
       isAdmin: true,
       token: generateToken(userFound._id)
     }
-
+    console.log('user Logged in', user);
     return res.json({ data: user, message: 'user login successfully!' })
   } catch (error) {
     next(appError(error.message))
   }
 };
 
-export const signup = async (req, res, next) => {
-  try {
-    const { username = '', password = null, adminlevel = 0, note = null } = req.body;
 
-    const userQuery = `SELECT * FROM tblStaff WHERE username = @username`;
-    const userRequest = new sql.Request();
-    userRequest.input('username', sql.NVarChar, username);
-    const userResult = await userRequest.query(userQuery);
-
-    const userFound = userResult?.recordset?.[0];
-
-    if (userFound) {
-      return next(appError('Email already exists', 409))
-    }
-
-    const hashPassword = await handleHashPassword(password);
-
-    const result = await sql.query`
-    INSERT INTO tblStaff (username, password, adminlevel, note) 
-    VALUES (${username}, ${hashPassword}, ${adminlevel}, ${note})
-    SELECT * FROM tblStaff WHERE username = ${username}`;
-
-    if (result?.recordset && result.recordset.length > 0) {
-      return res.status(201).json({
-        data: result.recordset[0],
-        message: 'User created successfully!'
-      });
-    } else {
-      return next(appError('Failed to create the User.', 500));
-    }
-
-  } catch (error) {
-    next(appError(error.message))
-  }
-};
 
 export const logout = async (req, res, next) => {
   try {

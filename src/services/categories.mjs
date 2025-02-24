@@ -2,6 +2,12 @@ import { sql } from "../config/db.mjs";
 import { appError } from "../middleware/globalErrorHandler.mjs";
 
 export const getCategories = async (req, res, next) => {
+  /* #swagger.parameters = [{
+    "name": "Authorization",
+    "in": "header",
+    "required": true,
+    "type": "string"
+  }] */
   try {
     const query = 'SELECT * FROM tblMembershipCategories';
     const result = await sql.query(query);
@@ -12,6 +18,12 @@ export const getCategories = async (req, res, next) => {
 };
 
 export const getMembers = async (req, res, next) => {
+  /* #swagger.parameters = [{
+    "name": "Authorization",
+    "in": "header",
+    "required": true,
+    "type": "string"
+  }] */
   try {
     const { category } = req.query;
     const query = `
