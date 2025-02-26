@@ -17,5 +17,5 @@ docker buildx build \
     ${no_cache}
 
 echo "To execute the docker container, please run the following cmd"
-echo "docker run -dit --name chltc-newsletter-be -p 3030:3030 --pull=always mydockerimagesreg.azurecr.io/chltc/chltc-newsletter-be:latest "
+echo "docker run -dit --name chltc-newsletter-be -p 3050:3050 --pull=always mydockerimagesreg.azurecr.io/chltc/chltc-newsletter-be:latest "
 

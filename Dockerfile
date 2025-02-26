@@ -14,7 +14,7 @@ WORKDIR /var/chltc-newsletter-be
 RUN npm install
 
 RUN chmod 755 ./startapp.sh
-EXPOSE 3030
+EXPOSE 3050
 # Start app main command e.g ENTRYPOINT ["/bin/bash", "-c", "go -dt blablablah"]
 ENTRYPOINT ["./startapp.sh"]
 

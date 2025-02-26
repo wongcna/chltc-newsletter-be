@@ -11,7 +11,7 @@ const doc = {
     description: 'Mass Newsletter Mailing System Backend API Doc',
     "version": `${version}`
   },
-  host: 'localhost:3030', //'chltc-newsletter-api-dev.azurewebsites.net/api',
+  host: 'localhost:3050', //'chltc-newsletter-api-dev.azurewebsites.net/api',
   "schemes": [
     "http","https"
   ],
