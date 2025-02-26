@@ -3,16 +3,16 @@ import { appError } from "../middleware/globalErrorHandler.mjs";
 
 export const createNewsletterTemplate = async (req, res, next) => {
   try {
-    const { Subject, EmailBOdy } = req.body;
+    const { Subject, EmailBody } = req.body;
 
-    if (!Subject || !EmailBOdy) {
-      return next(appError('Subject and EmailBOdy are required fields!', 400));
+    if (!Subject || !EmailBody) {
+      return next(appError('Subject and EmailBody are required fields!', 400));
     }
 
     const result = await sql.query`
-    INSERT INTO tblNewsletters (Subject, EmailBOdy) 
-    VALUES (${Subject}, ${EmailBOdy})
-    SELECT * FROM tblNewsletters WHERE Subject = ${Subject} AND EmailBOdy = ${EmailBOdy}
+    INSERT INTO tblNewsletters (Subject, EmailBody)
+    VALUES (${Subject}, ${EmailBody})
+    SELECT * FROM tblNewsletters WHERE Subject = ${Subject} AND EmailBody = ${EmailBody}
   `;
 
     if (result?.recordset && result.recordset.length > 0) {
@@ -106,11 +106,11 @@ export const getNewsletterTemplateById = async (req, res, next) => {
 export const updateNewsletterTemplate = async (req, res, next) => {
   try {
     const { id } = req.params;
-    const { Subject, EmailBOdy } = req.body;
+    const { Subject, EmailBody } = req.body;
 
     const result = await sql.query`
-      UPDATE tblNewsletters 
-      SET Subject = ${Subject}, EmailBOdy = ${EmailBOdy} 
+      UPDATE tblNewsletters
+      SET Subject = ${Subject}, EmailBody = ${EmailBody}
       WHERE ID = ${id}`;
 
     if (result.rowsAffected[0] === 0) {

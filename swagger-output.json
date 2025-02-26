@@ -333,7 +333,7 @@
                 "Subject": {
                   "example": "any"
                 },
-                "EmailBOdy": {
+                "EmailBody": {
                   "example": "any"
                 }
               }
@@ -404,7 +404,7 @@
                 "Subject": {
                   "example": "any"
                 },
-                "EmailBOdy": {
+                "EmailBody": {
                   "example": "any"
                 }
               }
