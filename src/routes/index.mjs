@@ -17,7 +17,7 @@ router.get('/health', (req, res) => {
 });
 
 router.use('/auth', authRouter)
-router.use(isLogin)
+//router.use(isLogin)
 router.use('/users', userRouter);
 router.get('/members', getMembers);
 router.get('/categories', getCategories);
